@@ -9,6 +9,7 @@ module.exports = postcss.plugin('postcss-only-colors', () => {
 					|| decl.prop.match('border') && decl.prop !== 'border-radius' && decl.prop !== 'border-spacing'
 					|| decl.prop === 'box-shadow'
 					|| decl.prop === 'text-shadow'
+					|| decl.prop === 'color'
 			) {
 				return;
 			}
