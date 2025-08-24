@@ -9,6 +9,7 @@ module.exports={
 		require('postcss-nested')(),
 		require('postcss-inline-svg')(),
 		require('autoprefixer')(),
+		require('./postcss-only-colors.js')(),
 		require('cssnano')({preset: ['default', {
 			svgo: {
 				plugins: extendDefaultPlugins(["convertStyleToAttrs", {
@@ -18,7 +19,8 @@ module.exports={
 						attrs: ["svg!clip-rule", "svg!stroke-miterlimit", "svg!xml:space", "svg!version", "stop!stop-opacity!1"]
 					}
 				}])
-			}
+			},
+				normalizeWhitespace: false,
 		}]})
 	]
 }

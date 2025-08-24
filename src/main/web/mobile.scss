@@ -40,8 +40,8 @@ span.wideOnly{
 }
 
 .header{
-	color: #000;
-	background: #FFF;
+	color: #fff;
+	background: $headerGradientTop;
 	height: 56px;
 	width: 100%;
 	position: fixed;
@@ -65,10 +65,12 @@ span.wideOnly{
 			background-repeat: no-repeat;
 		}
 		label{
-			background-image: svg-load('img/material/ic_menu.svg', fill: $iconColor);
+			background-image: svg-load('img/material/ic_menu.svg',
+			fill: #FFF);
 		}
 		.back{
-			background-image: svg-load('img/material/ic_arrow_back.svg', fill: $iconColor);
+			background-image: svg-load('img/material/ic_arrow_back.svg',
+			fill: #FFF);
 		}
 	}
 	.title{
@@ -82,7 +84,8 @@ span.wideOnly{
 			.icon{
 				width: 24px;
 				flex: none;
-				background: svg-load('img/material/arrow_drop_down_24dp_FILL0_wght400_GRAD0_opsz24.svg', fill: $iconColor) no-repeat right center;
+				background: svg-load('img/material/arrow_drop_down_24dp_FILL0_wght400_GRAD0_opsz24.svg',
+				fill: #FFF) no-repeat right center;
 			}
 		}
 	}
@@ -103,19 +106,24 @@ span.wideOnly{
 		background-repeat: no-repeat;
 		flex: none;
 		&.iconCW{
-			background-image: svg-load('img/material/visibility_off_24px.svg', fill: $iconColor);
+			background-image: svg-load('img/material/visibility_off_24px.svg',
+			fill: #FFF);
 		}
 		&.iconEdit{
-			background-image: svg-load('img/material/ic_edit.svg', fill: $iconColor);
+			background-image: svg-load('img/material/ic_edit.svg',
+			fill: #FFF);
 		}
 		&.iconFilterList{
-			background-image: svg-load('img/material/filter_list_24dp_FILL0_wght400_GRAD0_opsz24.svg', fill: $iconColor);
+			background-image: svg-load('img/material/filter_list_24dp_FILL0_wght400_GRAD0_opsz24.svg',
+			fill: #FFF);
 		}
 		&.iconSettings{
-			background-image: svg-load('img/material/settings_24dp_FILL1_wght400_GRAD0_opsz24.svg', fill: $iconColor);
+			background-image: svg-load('img/material/settings_24dp_FILL1_wght400_GRAD0_opsz24.svg',
+			fill: #FFF);
 		}
 		&.iconMore{
-			background-image: svg-load('img/material/ic_more_vert.svg', fill: $iconColor);
+			background-image: svg-load('img/material/ic_more_vert.svg',
+			fill: #FFF);
 		}
 	}
 }
@@ -422,7 +430,8 @@ select{
 		display: inline-block;
 		vertical-align: middle;
 		opacity: .5;
-		background: svg-load('img/like_mobile.svg', fill: $iconColor) no-repeat;
+		background: svg-load('img/like_mobile.svg',
+		fill: $postIconActionColor) no-repeat;
 		width: 16px;
 		height: 16px;
 		transition: opacity 0.3s ease;
