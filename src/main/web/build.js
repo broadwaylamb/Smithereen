@@ -14,7 +14,7 @@ var projectDir=process.argv[2];
 var files=fs.readdirSync(".", {withFileTypes: true});
 var staticFileVersions={};
 
-var resOutputDir=path.join(projectDir, "target/generated-resources/public/res");
+var resOutputDir = path.join(projectDir, "target/generated-resources/public/res1");
 if(!fs.existsSync(resOutputDir)){
 	fs.mkdirSync(resOutputDir, {recursive: true});
 }
