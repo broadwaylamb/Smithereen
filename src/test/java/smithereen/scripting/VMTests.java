@@ -1,6 +1,11 @@
 package smithereen.scripting;
 
+import com.code_intelligence.jazzer.junit.FuzzTest;
+import com.code_intelligence.jazzer.mutation.annotation.NotNull;
+
+import org.eclipse.jetty.util.StringUtil;
 import org.junit.jupiter.api.Test;
+import org.unbescape.java.JavaEscape;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +14,18 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class VMTests{
+
+	@FuzzTest
+	public void fuzzCompiler(@NotNull String input) {
+		try {
+			Script s=Script.compile(input);
+			ScriptVM.execute(s);
+		} catch (ScriptingException ignored) {
+		} catch (Throwable throwable) {
+			throw new IllegalStateException("Input: \"" + JavaEscape.escapeJavaMinimal(input) + "\"", throwable);
+		}
+	}
+
 	@Test
 	public void testAddition(){
 		Script s=Script.compile("return 1+5;");
