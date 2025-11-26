@@ -1,9 +1,9 @@
 package smithereen.scripting;
 
+import com.code_intelligence.jazzer.junit.DictionaryFile;
 import com.code_intelligence.jazzer.junit.FuzzTest;
 import com.code_intelligence.jazzer.mutation.annotation.NotNull;
 
-import org.eclipse.jetty.util.StringUtil;
 import org.junit.jupiter.api.Test;
 import org.unbescape.java.JavaEscape;
 
@@ -14,9 +14,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class VMTests{
-
-	@FuzzTest
-	public void fuzzCompiler(@NotNull String input) {
+	private void testDoesNotCrash(String input) {
 		try {
 			Script s=Script.compile(input);
 			ScriptVM.execute(s);
@@ -24,6 +22,17 @@ public class VMTests{
 		} catch (Throwable throwable) {
 			throw new IllegalStateException("Input: \"" + JavaEscape.escapeJavaMinimal(input) + "\"", throwable);
 		}
+	}
+
+	@FuzzTest
+	public void fuzzCompiler(@NotNull String input) {
+		testDoesNotCrash(input);
+	}
+
+	@FuzzTest
+	@DictionaryFile(resourcePath="VKScript.dict")
+	public void fuzzWithDictionary(@NotNull String input) {
+		testDoesNotCrash(input);
 	}
 
 	@Test
