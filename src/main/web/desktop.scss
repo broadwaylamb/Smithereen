@@ -103,13 +103,13 @@ small{
 		}
 	}
 	a.nav{
-		color: #E8EFF7;
+		color: #DAE1E8;
 		font-weight: bold;
 		display: inline-block;
 		line-height: $headerHeight;
 		height: $headerHeight;
 		padding: 0 10px;
-		text-shadow: 0 1px 0 #4e7097;
+		text-shadow: none;
 		vertical-align: top;
 		text-transform: lowercase;
 		&.back{
@@ -125,7 +125,7 @@ small{
 	a.nav:hover, a.nav:visited:hover{
 		color: #FFFFFF;
 		text-decoration: none;
-		background-color: rgba(0, 31, 64, 0.17);
+		background-color: initial;
 	}
 }
 
@@ -212,11 +212,12 @@ small{
 	right: 0;
 	bottom: 0;
 	background-color: $headerGradientBottom;
-	background: linear-gradient(to bottom, $headerGradientTop, $headerGradientBottom);
-	border: none;
+	background: linear-gradient(to bottom, $headerGradientTop, $headerGradientBottom 88%, $headerGradientBottom 93%, #4E6E94);
+	border: solid 1px $headerBorderBottomDark;
 	border-top: none;
 	border-radius: 0 0 8px 8px;
 	overflow: hidden;
+	box-shadow: 0 0 0 1px #3d5b87, 0 1px 2px 1px rgba(0, 0, 0, 25%);
 	.shadow{
 		width: 100%;
 		height: 6px;
@@ -609,7 +610,10 @@ _::-webkit-full-page-media, _:future, :root .post .repostIcon, :root .post .post
 }
 
 .pageContent{
-	box-shadow: 0 0 0 1px #D9E0E7, 0 0 0 2px #f3f3f3;
+	border-bottom: solid 1px #C3CAD2;
+	border-left: solid 1px #DAE1E8;
+	border-right: solid 1px #DAE1E8;
+	box-shadow: 0 0 0 1px #EBF0F4;
 	margin-right: 17px;
 }
 
@@ -1148,6 +1152,7 @@ input[type=submit], input[type=button], button, .button{
 		border: none;
 		line-height: 25px;
 		&:hover:not(.loading){
+			color: $normalLink;
 			background: $blockBackground;
 		}
 		&.loading{
@@ -2407,6 +2412,7 @@ textarea{
 	padding: 10px;
 	margin-top: 10px;
 	h3{
+		color: #8A0000;
 		font-size: 12px;
 		margin-bottom: 3px;
 		padding-bottom: 3px;
@@ -2416,12 +2422,20 @@ textarea{
 .navbar{
 	padding: 7px 10px;
 	line-height: 140%;
-	background: #E9EDF1;
+	background: linear-gradient(#FAF3C9, #ECE5BD);
 	font-weight: bold;
-	color: #607387;
+	color: black;
+	border-right: solid 1px #DCD4A4;
+	border-left: solid 1px #E4DDB4;
+	border-top: solid 1px #CEC8A5;
+	border-bottom: solid 1px #D7CF9E;
+
+	a {
+		color: #696029;
+	}
 
 	.auxText{
-		color: $auxiliaryBlockHeader;
+		color: #CDC48F;
 	}
 }
 
@@ -4824,7 +4838,8 @@ label.largeAccented{
 }
 
 .navbar .mobileOnlineIcon{
-	background: svg-load('img/online_mobile.svg', fill: $auxiliaryBlockHeader);
+	background: svg-load('img/online_mobile.svg',
+	fill: #CDC48F);
 }
 
 .onlineText{
