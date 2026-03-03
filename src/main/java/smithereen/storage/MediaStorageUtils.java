@@ -158,8 +158,8 @@ public class MediaStorageUtils{
 					LOG.trace("The target server does not support range requests, skipping");
 					continue;
 				}
-				var metadataParser = new ID3v2TagParser(rrr);
-				if(!metadataParser.parseInto(audio)){
+				new ID3v2TagParser(rrr).parseInto(audio);
+				if(audio.title==null && audio.artist==null){
 					LOG.trace("No valid supported ID3 tags found");
 					continue;
 				}

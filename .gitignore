@@ -39,3 +39,4 @@ node_modules/
 *.ipr
 
 .git-versioned-pom.xml
+.cifuzz-corpus/

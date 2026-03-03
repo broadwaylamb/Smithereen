@@ -1,5 +1,7 @@
 package smithereen;
 
+import com.code_intelligence.jazzer.junit.FuzzTest;
+
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +27,10 @@ public class ID3v2ParsingTest{
 			}
 		}
 
+		TestByteInput(byte @NotNull [] bytes){
+			this.bytes=bytes;
+		}
+
 		@Override
 		public long getSize(){
 			return bytes.length;
@@ -35,6 +41,25 @@ public class ID3v2ParsingTest{
 			byte[] newBytes=new byte[Math.min(length, bytes.length-position)];
 			System.arraycopy(bytes, position, newBytes, 0, newBytes.length);
 			return newBytes;
+		}
+	}
+
+
+	@FuzzTest
+	public void fuzz(byte @com.code_intelligence.jazzer.mutation.annotation.NotNull [] input){
+		if(input.length==0){
+			return;
+		}
+		try{
+			var audio=new Audio();
+			new ID3v2TagParser(new TestByteInput(input)).parseInto(audio);
+		}catch(Throwable throwable){
+			StringBuilder sb=new StringBuilder();
+			for(int i=0;i<input.length;++i){
+				sb.append(String.format("0x%02x, ", (int) input[i] & 0xFF));
+				if(i%16==15) sb.append("\n");
+			}
+			throw new IllegalStateException("Input:\n"+sb, throwable);
 		}
 	}
 
@@ -144,5 +169,55 @@ public class ID3v2ParsingTest{
 		assertEquals("Silence", audio.title);
 		assertEquals("piman", audio.artist);
 		assertEquals(3000, audio.duration);
+	}
+
+	@Test
+	public void testInvalidVersion() throws IOException, InterruptedException{
+		int[] inputBytes={
+				0x49, 0x44, 0x33, 0xff, 0xff, 0x0a, 0x2a, 0xff, 0x12, 0x00, 0x54, 0x50, 0x31, 0x00, 0x00, 0x00,
+				0x49, 0x44, 0x43, 0x02, 0x00, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x2a, 0xff,
+				0x12, 0x00, 0x49, 0x44,
+		};
+		var audio=new Audio();
+		new ID3v2TagParser(new TestByteInput(inputBytes)).parseInto(audio);
+	}
+
+	@Test
+	public void testIncompleteFrame1() throws IOException, InterruptedException{
+		int[] inputBytes={
+				0x49, 0x44, 0x33, 0x04, 0x34, 0x33, 0x49, 0x01, 0x00, 0xff, 0x33, 0x33, 0x32, 0x00, 0x00, 0xb8,
+				0x33,
+		};
+		var audio=new Audio();
+		new ID3v2TagParser(new TestByteInput(inputBytes)).parseInto(audio);
+	}
+
+	@Test
+	public void testIncompleteFrame2() throws IOException, InterruptedException{
+		int[] inputBytes={
+				0x49, 0x44, 0x33, 0x03, 0x33, 0x33, 0x32, 0x52, 0x52, 0xad, 0x54, 0x4c, 0x45, 0x4e, 0x00, 0x00,
+				0x00, 0x02, 0x00, 0x00, 0x02, 0x00, 0x35,
+		};
+		var audio=new Audio();
+		new ID3v2TagParser(new TestByteInput(inputBytes)).parseInto(audio);
+	}
+
+	@Test
+	public void testIncompleteFrame3() throws IOException, InterruptedException{
+		int[] inputBytes={
+				0x49, 0x44, 0x33, 0x03, 0x33, 0x33, 0x52, 0x52, 0xb2, 0xad, 0x54, 0x4c, 0x45, 0x4e, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x33,
+		};
+		var audio=new Audio();
+		new ID3v2TagParser(new TestByteInput(inputBytes)).parseInto(audio);
+	}
+
+	@Test
+	public void testIncompleteHeader() throws IOException, InterruptedException{
+		int[] inputBytes={
+				0x49, 0x44, 0x33, 0x03, 0xf3, 0x52, 0x33, 0x52, 0x52, 0x52, 0xb7, 0xad, 0x52, 0x44,
+		};
+		var audio=new Audio();
+		new ID3v2TagParser(new TestByteInput(inputBytes)).parseInto(audio);
 	}
 }

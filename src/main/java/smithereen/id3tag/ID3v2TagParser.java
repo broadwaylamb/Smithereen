@@ -51,7 +51,7 @@ public class ID3v2TagParser{
 		this.reader=reader;
 	}
 
-	public boolean parseInto(@NotNull Audio target) throws IOException, InterruptedException{
+	public void parseInto(@NotNull Audio target) throws IOException, InterruptedException{
 		long size=reader.getSize();
 		if(size<=0){
 			throw new IOException("Invalid size of audio file");
@@ -60,55 +60,57 @@ public class ID3v2TagParser{
 		// Opportunistically request the first 10 KiB of the MP3 file.
 		// Hopefully, all the necessary frames will be present in those first 10 KiB.
 		// If not, we won't bother.
-		byte[] requestedBytes=reader.read(10240, 0);
+		ByteBuffer requestedBytes=ByteBuffer.wrap(reader.read(10240, 0));
 
-		// Read 14 bytes (10 for ID3v2 header, 4 for possible extended header size)
-		if(requestedBytes.length<14){
-			return false;
+		// Be sure that the buffer is at least the size of an id3v2 header.
+		if(requestedBytes.remaining()<14){
+			return;
 		}
-		ByteBuffer v2prefix=ByteBuffer.wrap(requestedBytes, 0, 14);
+		ByteBuffer v2prefix=requestedBytes.slice(0, 14);
+		int majorVersion=v2prefix.get(3);
 
-		// Be sure that the buffer is at least the size of an id3v2 header
-		// Assume incompatibility if a major version of > 4 is used
-		if(v2prefix.remaining()!=14 ||
-				!getStringUtf8(v2prefix, 3).equals("ID3") ||
-				v2prefix.get(3)>4){
-			return false;
+		if(!getStringUtf8(v2prefix, 3).equals("ID3") || majorVersion<2 || majorVersion>4){
+			return;
 		}
 
 		int headerSize=10;
 		int tagSize=0;
-		int majorVersion=v2prefix.get(3);
 		int tagFlags=v2prefix.get(5);
 
 		boolean unsync=(tagFlags & 0x80)!=0;
 
+		if(v2prefix.remaining()<headerSize){
+			return;
+		}
 		// Calculate the tag size to be read
 		tagSize+=getSynchSafeInt(v2prefix, 6);
 
 		// Increment the header size to offset by if an extended header exists
 		if((tagFlags & 0x40)!=0){
+			if(v2prefix.remaining()<15){
+				return;
+			}
 			headerSize+=getSynchSafeInt(v2prefix, 11);
 		}
 
-		if(headerSize>=requestedBytes.length){
+		if(headerSize>=requestedBytes.remaining()){
 			// That's some enormous header. Don't bother.
-			return false;
+			return;
 		}
 
-		ByteBuffer v2Tag=ByteBuffer
-				.wrap(requestedBytes, 0, Math.min(headerSize+tagSize, requestedBytes.length))
-				.slice(headerSize, Math.min(tagSize, requestedBytes.length-headerSize));
+		ByteBuffer v2Tag=requestedBytes.slice(headerSize, Math.min(tagSize, requestedBytes.remaining()-headerSize));
 		int pos=0;
 
-		outer:
 		while(pos<v2Tag.remaining()){
 			for(int i=0;i<3;++i){
+				if(pos+i>=v2Tag.remaining()){
+					return;
+				}
 				byte frameBit=v2Tag.get(pos+i);
 				// frameBit must be A-Z or 0-9
 				if((frameBit<0x41 || frameBit>0x5a) && (frameBit<0x30 || frameBit>0x39)){
 					// This is not a frame, abort
-					break outer;
+					return;
 				}
 			}
 
@@ -118,25 +120,32 @@ public class ID3v2TagParser{
 			int payloadSize;
 			if(majorVersion<3){
 				frameHeaderSize=6;
+				if(pos+frameHeaderSize>=v2Tag.remaining()){
+					return;
+				}
 				payloadSize=getUInt24(v2Tag, pos+3);
 			}else if(majorVersion==3){
 				frameHeaderSize=10;
+				if(pos+frameHeaderSize>=v2Tag.remaining()){
+					return;
+				}
 				payloadSize=v2Tag.getInt(pos+4);
 			}else{
-				payloadSize=getSynchSafeInt(v2Tag, pos+4);
 				frameHeaderSize=10;
+				if(pos+frameHeaderSize>=v2Tag.remaining()){
+					return;
+				}
+				payloadSize=getSynchSafeInt(v2Tag, pos+4);
 			}
 			int frameSize=frameHeaderSize+payloadSize;
 			if(payloadSize<0 || pos+frameSize>=v2Tag.remaining()){
-				return false;
+				return;
 			}
 			ByteBuffer slice=v2Tag.slice(pos, frameSize);
 			parseFrameInto(target, slice, unsync, majorVersion<3);
 
 			pos+=frameSize;
 		}
-
-		return true;
 	}
 
 	private static void parseFrameInto(Audio target, ByteBuffer buf, boolean unsync, boolean legacy){
@@ -209,6 +218,10 @@ public class ID3v2TagParser{
 			payloadStart=0;
 		}
 
+		if(payloadStart>=buf.remaining()){
+			return null;
+		}
+
 		byte encoding=buf.get(payloadStart++);
 
 		// https://github.com/id3/ID3v2.4/blob/516075e38ff648a6390e48aff490abed987d3199/id3v2.40-structure.txt#L360-L369
@@ -248,7 +261,7 @@ public class ID3v2TagParser{
 	}
 
 	private static int utf16StringLength(@NotNull ByteBuffer buf, int offset){
-		for(int i=offset;i<buf.remaining();i+=2){
+		for(int i=offset;i<buf.remaining()-1;i+=2){
 			if(buf.getShort(i)==0){
 				return i-offset;
 			}
