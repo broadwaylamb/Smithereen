@@ -3,6 +3,7 @@ const enum AudioElementIDs{
 	TIP_WRAP="audioTipWrap",
 	TIP="audioTip",
 	TIP_ARROW="audioTipArrow",
+	INLINE_PLAYER="inlinePlayer",
 }
 
 const enum AudioLocalStorageKey{
@@ -273,6 +274,23 @@ class AudioPlayer{
 		}
 		if(!this.eventsInitialized){
 			this.initEvents();
+		}
+		if(!ge(AudioElementIDs.INLINE_PLAYER)){
+			const inlinePlayer=ce("div", {id: AudioElementIDs.INLINE_PLAYER});
+			inlinePlayer.addEventListener("dragstart", ()=>false);
+			inlinePlayer.addEventListener("selectstart", ()=>false);
+			// language=HTML
+			inlinePlayer.innerHTML=`
+				<div class="inlinePlayerBack"></div>
+				<div class="inlinePlayerWrap">
+					<div id="gp_play_btn" class="flL"></div>
+					<div id="inlinePlayerInfo" class="flL">
+						<div id="inlinePlayerArtist"></div>
+						<div id="inlinePlayerTitle"></div>
+					</div>
+				</div>
+			`;
+			document.body.appendChild(inlinePlayer);
 		}
 		this.setPlayer(new AudioManager(this), id);
 	}
