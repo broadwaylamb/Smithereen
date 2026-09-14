@@ -55,23 +55,23 @@ class TokenInput{
 		this.valueField=valueField;
 	}
 
-	public addToken(id:string, title:string, needUpdateCompletions:boolean=true){
-		id=id.toString();
+	public addToken(id:string|number, title:string, needUpdateCompletions:boolean=true){
+		var idStr=id.toString();
 		this.edit.value="";
 		var token;
 		this.edit.insertAdjacentElement("beforebegin", token=ce("div", {innerText: title, className: "token"}, [
 			ce("a", {href: "javascript:void(0)", className: "remove", title: lang("delete"), onclick: (ev)=>{
-				this.removeToken(id);
+				this.removeToken(idStr);
 			}})
 		]));
-		token.dataset.id=id;
+		token.dataset.id=idStr;
 		this.edit.placeholder="";
 		if(this.tokens.length){
 			var lastToken=this.tokens[this.tokens.length-1];
 			lastToken.classList.remove("selected");
 		}
 		this.tokens.push(token);
-		this.tokenIDs.push(id);
+		this.tokenIDs.push(idStr);
 		if(needUpdateCompletions)
 			this.updateCompletions();
 		this.updateValueField();

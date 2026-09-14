@@ -13,6 +13,7 @@ interface NotifierConfig{
 	sound: boolean
 }
 
+// Must be kept in sync with `smithereen.templates.Templates.addGlobalParamsToTemplate`
 interface BaseUserConfig {
 	csrf?: string
 	uid?: number
@@ -35,8 +36,13 @@ type AnonymousUserConfig={
 declare var userConfig:BaseUserConfig&(AuthenticatedUserConfig|AnonymousUserConfig);
 declare var langKeys:{[key:string]:string|string[]};
 declare var mobile:boolean;
+
+interface CurrentPageState{
+	// Will be merged with other CurrentPageState declarations
+}
+
 // State specific to the current page goes here. Reset on ajax navigation
-var cur:any={};
+var cur:CurrentPageState={};
 // Ajax navigation callbacks. Called during successful ajax navigation, before the page content is replaced
 var ajaxNavCallbacks:{():void}[]=[];
 

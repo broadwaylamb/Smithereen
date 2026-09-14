@@ -7,9 +7,32 @@ interface PrivacySetting{
 	xl:number[];
 }
 
-function getFriendForPrivacy(id:number){
+const enum FriendListKey{
+	ID=0,
+	NAME=1,
+	PROFILE_URL=2,
+	NAME_FOR_EXCEPT=3,
+	AVATAR_URLS=4,
+}
+
+// Must be kept in sync with what `ajaxFriendsForPrivacyBoxes` returns from the backend
+interface FriendsForPrivacyBox{
+	[FriendListKey.ID]:number
+	[FriendListKey.NAME]:string
+	[FriendListKey.PROFILE_URL]:string
+	[FriendListKey.NAME_FOR_EXCEPT]:string
+	[FriendListKey.AVATAR_URLS]:string[]|null
+}
+
+//noinspection JSUnusedGlobalSymbols
+interface CurrentPageState{
+	friendListForPrivacy?:FriendsForPrivacyBox[]
+	friendLists?: {[key:string]:string};
+}
+
+function getFriendForPrivacy(id:number):FriendsForPrivacyBox{
 	for(var user of cur.friendListForPrivacy){
-		if(user[0]==id)
+		if(user[FriendListKey.ID]==id)
 			return user;
 	}
 	return [id, "DELETED", "/id"+id, "DELETED", null];
@@ -103,7 +126,7 @@ function showPrivacyMenu(el:HTMLAnchorElement, key:string, onlyMe:boolean, onlyF
 			}
 			for(var id of v.au){
 				var user=getFriendForPrivacy(id);
-				links.push(`<a href="${user[2]}">${user[1].escapeHTML()}</a>`);
+				links.push(`<a href="${user[FriendListKey.PROFILE_URL]}">${user[FriendListKey.NAME].escapeHTML()}</a>`);
 			}
 			extHtml+=links.join(lang("privacy_settings_value_name_separator"));
 		}
@@ -115,7 +138,7 @@ function showPrivacyMenu(el:HTMLAnchorElement, key:string, onlyMe:boolean, onlyF
 			}
 			for(var id of v.xu){
 				var user=getFriendForPrivacy(id);
-				links.push(`<a href="${user[2]}">${user[3].escapeHTML()}</a>`);
+				links.push(`<a href="${user[FriendListKey.PROFILE_URL]}">${user[FriendListKey.NAME_FOR_EXCEPT].escapeHTML()}</a>`);
 			}
 			extHtml+=links.join(lang("privacy_settings_value_name_separator"));
 		}
@@ -285,10 +308,10 @@ class ExtendedPrivacyBox extends Box{
 
 		for(var friend of cur.friendListForPrivacy){
 			this.friends.push({
-				normalizedName: friend[1],
+				normalizedName: friend[FriendListKey.NAME],
 				token: {
-					id: friend[0].toString(),
-					title: friend[1]
+					id: friend[FriendListKey.ID].toString(),
+					title: friend[FriendListKey.NAME]
 				}
 			});
 		}
@@ -304,11 +327,11 @@ class ExtendedPrivacyBox extends Box{
 		}
 		for(var id of currentValue.au){
 			var user=getFriendForPrivacy(id);
-			this.allowField.addToken(user[0], user[1], false);
+			this.allowField.addToken(user[FriendListKey.ID], user[FriendListKey.NAME], false);
 		}
 		for(var id of currentValue.xu){
 			var user=getFriendForPrivacy(id);
-			this.denyField.addToken(user[0], user[1], false);
+			this.denyField.addToken(user[FriendListKey.ID], user[FriendListKey.NAME], false);
 		}
 	}
 
@@ -399,16 +422,16 @@ class FriendListChoiceBox extends BaseScrollableBox{
 
 		for(var friend of cur.friendListForPrivacy){
 			var row=this.makeRow(friend);
-			if(currentValue.indexOf(friend[0])!=-1){
+			if(currentValue.indexOf(friend[FriendListKey.ID])!=-1){
 				row.hide();
 				var selRow=this.makeRow(friend);
 				selRow.id+="sel";
 				this.selectedFriendsList.appendChild(selRow);
 				this.selectedEmpty.hide();
-				this.selectedIDs.push(parseInt(friend[0]));
+				this.selectedIDs.push(friend[FriendListKey.ID]);
 			}
 			this.allFriendsList.appendChild(row);
-			this.idNameMap[friend[0].toString()]=friend[1].toString();
+			this.idNameMap[friend[FriendListKey.ID].toString()]=friend[FriendListKey.NAME];
 		}
 	}
 
@@ -430,14 +453,14 @@ class FriendListChoiceBox extends BaseScrollableBox{
 		return cont;
 	}
 
-	private makeRow(friend:any[]):HTMLElement{
-		var row=ce("div", {className: "row", id: "selectFriendsRow"+friend[0]}, [
-			makeAvatar(friend[4], "s", 32),
-			ce("div", {className: "name ellipsize", innerText: friend[1]}),
+	private makeRow(friend:FriendsForPrivacyBox):HTMLElement{
+		var row=ce("div", {className: "row", id: "selectFriendsRow"+friend[FriendListKey.ID]}, [
+			makeAvatar(friend[FriendListKey.AVATAR_URLS], "s", 32),
+			ce("div", {className: "name ellipsize", innerText: friend[FriendListKey.NAME]}),
 			ce("span", {className: "icon"})
 		]);
-		row.addEventListener("click", this.onRowClick.bind(this, parseInt(friend[0])));
-		row.dataset.uid=friend[0];
+		row.addEventListener("click", this.onRowClick.bind(this, friend[FriendListKey.ID]));
+		row.dataset.uid=friend[FriendListKey.ID].toString();
 		return row;
 	}
 
@@ -534,13 +557,13 @@ class MobileFriendListChoiceBox extends BaseScrollableBox{
 
 		for(var friend of cur.friendListForPrivacy){
 			var row=this.makeRow(friend);
-			if(currentValue.indexOf(friend[0])!=-1){
-				this.selectedIDs.push(parseInt(friend[0]));
+			if(currentValue.indexOf(friend[FriendListKey.ID])!=-1){
+				this.selectedIDs.push(friend[FriendListKey.ID]);
 				var cbox=row.qs("input") as HTMLInputElement;
 				cbox.checked=true;
 			}
 			this.allFriendsList.appendChild(row);
-			this.idNameMap[friend[0].toString()]=friend[1].toString();
+			this.idNameMap[friend[FriendListKey.ID].toString()]=friend[FriendListKey.NAME].toString();
 		}
 	}
 
@@ -556,15 +579,15 @@ class MobileFriendListChoiceBox extends BaseScrollableBox{
 		this.searchFieldWrap.parentElement.insertAdjacentHTML("beforebegin", html);
 	}
 
-	private makeRow(friend:any[]):HTMLElement{
+	private makeRow(friend:FriendsForPrivacyBox):HTMLElement{
 		var cbox:HTMLInputElement;
-		var row=ce("label", {className: "row compactUserRow", id: "selectFriendsRow"+friend[0]}, [
+		var row=ce("label", {className: "row compactUserRow", id: "selectFriendsRow"+friend[FriendListKey.ID]}, [
 			cbox=ce("input", {type: "checkbox"}),
-			makeAvatar(friend[4], "s", 32),
-			ce("div", {className: "name ellipsize", innerText: friend[1]})
+			makeAvatar(friend[FriendListKey.AVATAR_URLS], "s", 32),
+			ce("div", {className: "name ellipsize", innerText: friend[FriendListKey.NAME]})
 		]);
-		row.dataset.uid=friend[0];
-		var id=parseInt(friend[0]);
+		row.dataset.uid=friend[FriendListKey.ID].toString();
+		var id=friend[FriendListKey.ID];
 		cbox.addEventListener("change", (ev)=>{
 			if(cbox.checked){
 				if(this.selectedIDs.indexOf(id)==-1)
@@ -633,14 +656,14 @@ function initMobilePrivacyForm(valueField:HTMLInputElement, updateField:boolean=
 	var deniedListW=ge("deniedFriends");
 	var currentValue=JSON.parse(valueField.value) as PrivacySetting;
 
-	function makeUserRow(user:any[]):HTMLElement{
-		var id=parseInt(user[0]);
+	function makeUserRow(user:FriendsForPrivacyBox):HTMLElement{
+		var id=user[FriendListKey.ID];
 		var row=ce("div", {className: "compactUserRow", id: "userRow"+id}, [
-			makeAvatar(user[4], "s", 32),
-			ce("div", {className: "name ellipsize", innerText: user[1]}),
+			makeAvatar(user[FriendListKey.AVATAR_URLS], "s", 32),
+			ce("div", {className: "name ellipsize", innerText: user[FriendListKey.NAME]}),
 			ce("a", {href: "javascript:void(0)", className: "remove actionIcon", title: lang("delete"), onclick: (ev)=>removeUser(id)})
 		]);
-		row.dataset.uid=user[0];
+		row.dataset.uid=user[FriendListKey.ID].toString();
 		return row;
 	}
 
@@ -677,10 +700,10 @@ function initMobilePrivacyForm(valueField:HTMLInputElement, updateField:boolean=
 			}
 		}
 		for(var friend of cur.friendListForPrivacy){
-			if(value.au.indexOf(friend[0])!=-1){
+			if(value.au.indexOf(friend[FriendListKey.ID])!=-1){
 				allowedList.appendChild(makeUserRow(friend));
 			}
-			if(value.xu.indexOf(friend[0])!=-1){
+			if(value.xu.indexOf(friend[FriendListKey.ID])!=-1){
 				deniedList.appendChild(makeUserRow(friend));
 			}
 		}
@@ -821,7 +844,7 @@ function showMobilePrivacyBox(key:string, value:PrivacySetting, onlyMe:boolean){
 						names.push(cur.friendLists[id]);
 					}
 					for(var id of setting.au){
-						names.push(getFriendForPrivacy(id)[1]);
+						names.push(getFriendForPrivacy(id)[FriendListKey.NAME]);
 					}
 					uiStr+=names.join(lang("privacy_settings_value_name_separator"));
 				}
@@ -832,7 +855,7 @@ function showMobilePrivacyBox(key:string, value:PrivacySetting, onlyMe:boolean){
 						names.push(cur.friendLists[id]);
 					}
 					for(var id of setting.xu){
-						names.push(getFriendForPrivacy(id)[3]);
+						names.push(getFriendForPrivacy(id)[FriendListKey.NAME_FOR_EXCEPT]);
 					}
 					uiStr+=names.join(lang("privacy_settings_value_name_separator"));
 				}
