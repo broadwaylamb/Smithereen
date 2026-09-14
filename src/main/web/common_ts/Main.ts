@@ -1,7 +1,38 @@
 ///<reference path="./PostForm.ts"/>
 ///<reference path="./Notifier.ts"/>
 
-declare var userConfig:any;
+const enum PluralRules{
+	ENGLISH="english",
+	SINGLE="single",
+	SLAVIC="slavic",
+}
+
+interface NotifierConfig{
+	ws: string
+	enabled: boolean
+	sound: boolean
+}
+
+interface BaseUserConfig {
+	csrf?: string
+	uid?: number
+	notifier?: NotifierConfig
+	timeZone?: string
+	locale: string
+	langPluralRulesName: PluralRules
+}
+
+interface AuthenticatedUserConfig{
+	csrf: string
+	uid: number
+	notifier: NotifierConfig
+}
+
+type AnonymousUserConfig={
+	[k in keyof AuthenticatedUserConfig]?:never;
+}
+
+declare var userConfig:BaseUserConfig&(AuthenticatedUserConfig|AnonymousUserConfig);
 declare var langKeys:{[key:string]:string|string[]};
 declare var mobile:boolean;
 // State specific to the current page goes here. Reset on ajax navigation

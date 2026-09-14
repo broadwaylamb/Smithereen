@@ -428,14 +428,14 @@ function langFileSize(size:number):string{
 	return lang(key, {amount: Intl.NumberFormat(userConfig.locale, {maximumFractionDigits: 2}).format(amount)});
 }
 
-var langPluralRules:{[key:string]:(quantity:number)=>string}={
-	single: function(quantity:number){
+var langPluralRules:{[key in PluralRules]:(quantity:number)=>"one"|"few"|"other"}={
+	[PluralRules.SINGLE]: function(){
 		return "other";
 	},
-	english: function(quantity:number){
+	[PluralRules.ENGLISH]: function(quantity:number){
 		return quantity==1 ? "one" : "other";
 	},
-	slavic: function(quantity:number){
+	[PluralRules.SLAVIC]: function(quantity:number){
 		if(Math.floor(quantity/10)%10==1)
 			return "other";
 		var units=quantity%10;
@@ -447,14 +447,14 @@ var langPluralRules:{[key:string]:(quantity:number)=>string}={
 	}
 };
 
-function choosePluralForm(n:number, args:any, values:{[key:string]:Function}):string{
+function choosePluralForm<T>(n:number, args:T, values:{[key:string]:(args:T)=>string}):string{
 	if(values[n.toString()])
 		return values[n.toString()](args);
 	var k=langPluralRules[userConfig.langPluralRulesName](n);
 	return (values[k] || values["other"])(args);
 }
 
-function chooseLangOption(v:string, args:any, values:{[key:string]:Function}):string{
+function chooseLangOption<T>(v:string, args:T, values:{[key:string]:(args:T)=>string}):string{
 	return (values[v] || values["other"])(args);
 }
 
