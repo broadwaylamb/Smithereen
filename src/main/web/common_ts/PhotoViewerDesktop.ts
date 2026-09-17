@@ -122,7 +122,7 @@ class DesktopPhotoViewer extends BaseMediaViewerLayer{
 
 	public onWindowResize(){
 		super.onWindowResize();
-		this.updateSize();
+		this.updateSize(false);
 		this.updateImageURLs(this.currentURLs, this.imgEl, this.sourceWebp, this.sourceJpeg);
 	}
 
@@ -147,13 +147,14 @@ class DesktopPhotoViewer extends BaseMediaViewerLayer{
 	public onHidden(){
 		super.onHidden();
 		window.removeEventListener("keydown", this.keyDownListener);
+		this.getLayerManager().adjustInlinePlayerLeftPosition();
 	}
 
 	private updateTitle(){
 		this.titleEl.innerText=lang("photo_X_of_Y", {current: this.currentIndex+1, total: this.total});
 	}
 
-	private updateSize(){
+	private updateSize(animateInlinePlayerPositionChange:boolean=true){
 		var viewportW=window.innerWidth;
 		var viewportH=window.innerHeight;
 		var biggest=this.currentURLs[this.currentURLs.length-1];
@@ -186,6 +187,7 @@ class DesktopPhotoViewer extends BaseMediaViewerLayer{
 		this.imgH=h;
 
 		this.layerBackThing.style.width=Math.round(viewportW/2-this.contentWrap.offsetWidth/2)+"px";
+		this.getLayerManager().adjustInlinePlayerLeftPosition(this.layerBackThing.style.width, animateInlinePlayerPositionChange);
 
 		var prevTagOverlayW=this.tagsWrap.offsetWidth;
 		var tagOverlayW:number, tagOverlayH:number;

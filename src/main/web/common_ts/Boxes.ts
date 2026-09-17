@@ -198,11 +198,39 @@ class LayerManager{
 
 	private lockPageScroll(){
 		if(LayerManager.pageScrollLockCount++==0){
+			this.lockInlinePlayerIfNeeded(); // It's important that this is called before changing the body style
 			var scrollbarW=window.innerWidth-document.body.clientWidth;
 			document.body.style.top = `-${window.scrollY}px`;
 			document.body.style.position="fixed";
 			document.body.style.paddingRight=scrollbarW+"px";
 			ge("wrap").classList.add("scrollLocked");
+		}
+	}
+
+	lockInlinePlayerIfNeeded(){
+		if(LayerManager.pageScrollLockCount<=0) return;
+		const inlinePlayer=ge("inlinePlayer");
+		if(inlinePlayer){
+			const headerBarHeight=49;
+			const inlinePlayerDistanceFromEdge=20;
+
+			// It is important that getBoundingClientRect is called BEFORE anything else.
+			inlinePlayer.style.top=Math.max(inlinePlayerDistanceFromEdge, Math.min(headerBarHeight, inlinePlayer.getBoundingClientRect().top))+"px";
+			inlinePlayer.style.marginTop="0";
+			inlinePlayer.style.position="fixed";
+		}
+	}
+
+	adjustInlinePlayerLeftPosition(value:string="", animated:boolean=true){
+		const player=ge("inlinePlayer");
+		let oldLeft=0;
+		if(player && animated){
+			oldLeft=parseInt(getComputedStyle(player).left);
+		}
+		document.body.style.setProperty("--inline-player-compact-left-offset", value);
+		if(player && animated){
+			const newLeft=parseInt(getComputedStyle(player).left);
+			player.anim([{left: oldLeft+"px"}, {left: newLeft+"px"}], {duration: 100, easing: "ease-in-out"});
 		}
 	}
 
@@ -214,6 +242,12 @@ class LayerManager{
 			document.body.style.paddingRight="";
 			ge("wrap").classList.remove("scrollLocked");
 			window.scrollTo(0, parseInt(scrollY || '0') * -1);
+			const inlinePlayer=ge("inlinePlayer");
+			if(inlinePlayer){
+				inlinePlayer.style.top="";
+				inlinePlayer.style.marginTop="";
+				inlinePlayer.style.position="";
+			}
 		}
 	}
 
@@ -570,6 +604,16 @@ class Box extends BaseLayer{
 	public addButtonBarAuxHTML(html:string){
 		var aux=ce("div", {className: "buttonBarAux", innerHTML: html});
 		this.buttonBar.insertBefore(aux, this.buttonBar.firstChild);
+	}
+
+	onShown(){
+		super.onShown();
+		this.getLayerManager().adjustInlinePlayerLeftPosition(this.boxLayer.getBoundingClientRect().left+"px");
+	}
+
+	onHidden(){
+		super.onHidden();
+		this.getLayerManager().adjustInlinePlayerLeftPosition();
 	}
 }
 

@@ -58,10 +58,12 @@ class PostLayer extends BaseMediaViewerLayer{
 				commentEl.scrollIntoView();
 			}
 		}
+		this.getLayerManager().adjustInlinePlayerLeftPosition(`calc(50% - ${getComputedStyle(this.contentWrap).width} / 2)`);
 		AudioPlayer.getInstance().registerPlayerContainer(PlayerIDSuffix.LAYER, true);
 	}
 
 	onHidden(){
+		this.getLayerManager().adjustInlinePlayerLeftPosition();
 		AudioPlayer.getInstance().deregisterPlayerContainer(PlayerIDSuffix.LAYER);
 		super.onHidden();
 	}
