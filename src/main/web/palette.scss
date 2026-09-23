@@ -115,10 +115,9 @@ $audioLoadLineColor: #BAC7D4;
 $audioProgressLineColor: #5C7A99;
 $audioSliderColor: #5F7E9E;
 $audioTipTextColor: #4D637C;
-$inlinePlayerBackgroundCover: #d9e0e8;
-$inlinePlayerTextColor: #66819e;
-$inlinePlayerTextColorOnHover: #567392;
-$inlinePlayerButtonColor: $inlinePlayerTextColorOnHover;
+$inlinePlayerBackgroundColor: #d9e0e8;
+$inlinePlayerTextColor: #567392;
+$inlinePlayerButtonColor: $inlinePlayerTextColor;
 
 /* data table */
 $dataTableBorder: #d2d8df;
