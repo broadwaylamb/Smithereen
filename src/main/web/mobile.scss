@@ -125,6 +125,9 @@ span.wideOnly{
 			background-image: svg-load('img/material/ic_more_vert.svg',
 			fill: #FFF);
 		}
+		&.inlineLoader{
+			background: svg-load('img/loading_anim.svg', fill: $textOnAccent) no-repeat center;
+		}
 	}
 }
 
